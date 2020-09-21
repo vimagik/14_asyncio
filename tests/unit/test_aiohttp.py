@@ -27,11 +27,21 @@ async def get_items_request(request):
     return web.Response(body=body, content_type='application/json')
 
 
+async def get_comments_request(request):
+    response = {
+        'id': '111',
+        'text': 'href="/"',
+    }
+    body = json.dumps(response).encode('utf-8')
+    return web.Response(body=body, content_type='application/json')
+
+
 def create_app(loop):
     app = web.Application(loop=loop)
     app.router.add_route('GET', '/', hello)
     app.router.add_route('GET', '/get_new_stories', get_new_stories_request)
     app.router.add_route('GET', '/123', get_items_request)
+    app.router.add_route('GET', '/comments/321', get_comments_request)
     return app
 
 
@@ -75,6 +85,18 @@ async def test_save_html_page_save_comment(test_client):
     await save_html_page('/', client, 123, 321)
     new_path = os.path.join(main.OUTPUT_PATH, '123')
     new_file = os.path.join(new_path, '321.html')
+    assert os.path.exists(new_path)
+    assert os.path.exists(new_file)
+    os.remove(new_file)
+    os.removedirs(new_path)
+
+
+async def test_save_all_pages_in_comment(test_client):
+    client = await test_client(create_app)
+    main.GET_ITEMS_URL = '/comments/{}'
+    await main.save_all_pages_in_comment(client, 321, 123)
+    new_path = os.path.join(main.OUTPUT_PATH, '123')
+    new_file = os.path.join(new_path, '111.html')
     assert os.path.exists(new_path)
     assert os.path.exists(new_file)
     os.remove(new_file)

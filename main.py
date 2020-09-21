@@ -65,6 +65,8 @@ async def save_all_pages_in_comment(session: ClientSession, comment_id: int, sto
 
 async def main() -> None:
     """Run with period of RUN_PERIOD, get and download new stories from TOP_STORIES_URL"""
+    if not os.path.exists(OUTPUT_PATH):
+        os.mkdir(OUTPUT_PATH)
     old_stories = set(int(story_id) for story_id in os.listdir(OUTPUT_PATH))
     try:
         while True:
@@ -78,6 +80,7 @@ async def main() -> None:
                         if comments:
                             for saved_comment in asyncio.as_completed([save_all_pages_in_comment(session, comment, item_id) for comment in comments]):
                                 await saved_comment
+            print(f'{len(new_stories)} new stories downloaded')
             await asyncio.sleep(RUN_PERIOD)
     except KeyboardInterrupt:
         return
