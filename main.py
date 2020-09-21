@@ -1,14 +1,17 @@
-import aiohttp
 import asyncio
 import os
 import re
-from aiohttp import ClientSession
 from html import unescape
 from time import time
+
+import aiohttp
+from aiohttp import ClientSession
+
 
 TOP_STORIES_URL = 'https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty'
 GET_ITEMS_URL = 'https://hacker-news.firebaseio.com/v0/item/{}.json?print=pretty'
 RUN_PERIOD = 60
+OUTPUT_PATH = 'topstories'
 
 
 async def get_new_stories(url: str, session: ClientSession, old_stories: set) -> set:
@@ -27,7 +30,7 @@ async def get_item(session: ClientSession, id_item: str) -> tuple:
 
 async def save_html_page(url: str, session: ClientSession, story_id: int, comment_id: int = None) -> None:
     """Universal func for save stories and pages in comments"""
-    new_path = os.path.join('topstories', str(story_id))
+    new_path = os.path.join(OUTPUT_PATH, str(story_id))
     file_name = 'index.html' if not comment_id else f'{comment_id}.html'
     if not os.path.exists(new_path):
         os.mkdir(new_path)
@@ -62,7 +65,7 @@ async def save_all_pages_in_comment(session: ClientSession, comment_id: int, sto
 
 async def main() -> None:
     """Run with period of RUN_PERIOD, get and download new stories from TOP_STORIES_URL"""
-    old_stories = set(int(story_id) for story_id in os.listdir('topstories'))
+    old_stories = set(int(story_id) for story_id in os.listdir(OUTPUT_PATH))
     try:
         while True:
             async with aiohttp.ClientSession() as session:
