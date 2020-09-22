@@ -10,7 +10,7 @@ from aiohttp import ClientSession
 
 TOP_STORIES_URL = 'https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty'
 GET_ITEMS_URL = 'https://hacker-news.firebaseio.com/v0/item/{}.json?print=pretty'
-RUN_PERIOD = 60
+RUN_PERIOD = 600
 OUTPUT_PATH = 'topstories'
 
 
