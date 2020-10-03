@@ -33,6 +33,7 @@ async def get_item(session: ClientSession, id_item: str) -> tuple:
 
 
 def write_data(file_name: str, data: bytes) -> None:
+    """Write downloaded data in file"""
     with open(file_name, 'wb') as file:
         file.write(data)
 
