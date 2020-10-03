@@ -1,6 +1,7 @@
 import pytest
 import json
 import os
+import asyncio
 from aiohttp import web
 
 import main
@@ -71,7 +72,8 @@ async def test_get_item(test_client):
 
 async def test_save_html_page_save_index(test_client):
     client = await test_client(create_app)
-    await save_html_page('/', client, 123)
+    loop = asyncio.get_event_loop()
+    await save_html_page('/', client, 123, loop)
     new_path = os.path.join(main.OUTPUT_PATH, '123')
     new_file = os.path.join(new_path, 'index.html')
     assert os.path.exists(new_path)
@@ -82,7 +84,8 @@ async def test_save_html_page_save_index(test_client):
 
 async def test_save_html_page_save_comment(test_client):
     client = await test_client(create_app)
-    await save_html_page('/', client, 123, 321)
+    loop = asyncio.get_event_loop()
+    await save_html_page('/', client, 123, loop, 321)
     new_path = os.path.join(main.OUTPUT_PATH, '123')
     new_file = os.path.join(new_path, '321.html')
     assert os.path.exists(new_path)
@@ -93,8 +96,9 @@ async def test_save_html_page_save_comment(test_client):
 
 async def test_save_all_pages_in_comment(test_client):
     client = await test_client(create_app)
+    loop = asyncio.get_event_loop()
     main.GET_ITEMS_URL = '/comments/{}'
-    await main.save_all_pages_in_comment(client, 321, 123)
+    await main.save_all_pages_in_comment(client, 321, 123, loop)
     new_path = os.path.join(main.OUTPUT_PATH, '123')
     new_file = os.path.join(new_path, '111.html')
     assert os.path.exists(new_path)
