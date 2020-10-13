@@ -70,6 +70,7 @@ async def save_all_pages_in_comment(session: ClientSession, comment_id: int, sto
 
 
 async def processing_new_stories(new_stories: set, session: ClientSession, loop_for_write: ProactorEventLoop) -> None:
+    """Async processing all new stories"""
     for get_func in asyncio.as_completed([get_item(session, story) for story in new_stories]):
         item_id, item_url, comments = await get_func
         await save_html_page(item_url, session, item_id, loop_for_write)
