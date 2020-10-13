@@ -69,6 +69,17 @@ async def save_all_pages_in_comment(session: ClientSession, comment_id: int, sto
                 await save_html_page(comment_url, session, story_id, loop, data['id'])
 
 
+async def processing_new_stories(new_stories: set, session: ClientSession, loop_for_write: ProactorEventLoop) -> None:
+    for get_func in asyncio.as_completed([get_item(session, story) for story in new_stories]):
+        item_id, item_url, comments = await get_func
+        await save_html_page(item_url, session, item_id, loop_for_write)
+        if not comments:
+            continue
+        for saved_comment in asyncio.as_completed(
+                [save_all_pages_in_comment(session, comment, item_id, loop_for_write) for comment in comments]):
+            await saved_comment
+
+
 async def main() -> None:
     """Run with period of RUN_PERIOD, get and download new stories from TOP_STORIES_URL"""
     if not os.path.exists(OUTPUT_PATH):
@@ -85,13 +96,7 @@ async def main() -> None:
                 old_stories = old_stories.union(new_stories)
                 if not new_stories:
                     break
-                for get_func in asyncio.as_completed([get_item(session, story) for story in new_stories]):
-                    item_id, item_url, comments = await get_func
-                    await save_html_page(item_url, session, item_id, loop_for_write)
-                    if not comments:
-                        continue
-                    for saved_comment in asyncio.as_completed([save_all_pages_in_comment(session, comment, item_id, loop_for_write) for comment in comments]):
-                        await saved_comment
+                await processing_new_stories(new_stories, session, loop_for_write)
             duration = monotonic() - start_iteration
             print(f'{len(new_stories)} new stories downloaded by {duration} sec')
             await asyncio.sleep(RUN_PERIOD - duration)
